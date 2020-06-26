@@ -44,6 +44,7 @@ func CloneRepo(url string, dst string) (err error) {
 
 	beeLogger.Log.Info("start git clone from " + url + ", to dst at " + dst)
 	_, stderr, err := command.ExecCmd("git", "clone", url, dst)
+
 	if err != nil {
 		beeLogger.Log.Error("error git clone from " + url + ", to dst at " + dst)
 		return concatenateError(err, stderr)
@@ -56,15 +57,16 @@ func CloneORPullRepo(url string, dst string) error {
 	if !utils.IsDir(dst) {
 		return CloneRepo(url, dst)
 	} else {
-		projectName, err := getGitProjectName(url)
-		if err != nil {
-			return err
-		}
+		//projectName, err := getGitProjectName(url)
+		//if err != nil {
+		//	return err
+		//}
 
-		projectDir := dst + "/" + projectName
-		utils.Mkdir(projectDir)
+		//fmt.Println("dst------>", dst)
+		//projectDir := dst + "/" + projectName
+		utils.Mkdir(dst)
 
-		repo, err := OpenRepository(projectDir)
+		repo, err := OpenRepository(dst)
 		if err != nil {
 			return err
 		}
@@ -127,6 +129,7 @@ func OpenRepository(repoPath string) (*Repository, error) {
 
 // 拉取代码
 func (repo *Repository) Pull() error {
+	beeLogger.Log.Info("git pull " + repo.Path)
 	_, stderr, err := command.ExecCmdDir(repo.Path, "git", "pull")
 	if err != nil {
 		return concatenateError(err, stderr)
