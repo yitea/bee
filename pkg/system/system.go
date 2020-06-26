@@ -3,13 +3,14 @@ package system
 import (
 	"os"
 	"os/user"
+	"path/filepath"
 )
 
 // Bee System Params ...
 var (
-	Usr, _ = user.Current()
-	//BeegoHome = filepath.Join(Usr.HomeDir, "/.beego")
-	BeegoHome  = "/home/www/server/opensource"
+	Usr, _    = user.Current()
+	BeegoHome = filepath.Join(Usr.HomeDir, "/.beego")
+	//BeegoHome  = "/home/www/server/opensource"
 	CurrentDir = getCurrentDirectory()
 	GoPath     = os.Getenv("GOPATH")
 )

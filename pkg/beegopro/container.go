@@ -3,6 +3,7 @@ package beegopro
 import (
 	"encoding/json"
 	beeLogger "github.com/beego/bee/logger"
+	"github.com/beego/bee/pkg/git"
 	"github.com/beego/bee/pkg/system"
 	"github.com/beego/bee/utils"
 	"github.com/flosch/pongo2"
@@ -24,9 +25,9 @@ var DefaultBeegoPro = &Container{
 		BeegoPath:     system.CurrentDir,
 		AntDesignPath: system.CurrentDir,
 		Models:        make(map[string]ModelsContent, 0),
-		Url:           "git@github.com:beego-dev/bee-mod.git",
+		Url:           "git@github.com:beego-dev/beego-pro.git",
 		Branch:        "master",
-		GitPath:       system.BeegoHome + "/bee-mod",
+		GitPath:       system.BeegoHome + "/beego-pro",
 		Overwrite:     false,
 		Format:        true,
 	},
@@ -99,6 +100,7 @@ type Schema struct {
 	Name    string `json:"name"`    // mysql name
 	Type    string `json:"type"`    // mysql type
 	Comment string `json:"comment"` // mysql comment
+	Orm     string `json:"orm"`
 }
 
 type ProSingleRender func(name string, content ModelsContent) error // 渲染单个表
@@ -136,11 +138,11 @@ func (c *Container) Generate(flag bool) {
 
 	c.Option.BeegoPath = absolutePath
 
-	//err = git.CloneORPullRepo(c.Option.Url, c.Option.GitPath)
-	//if err != nil {
-	//	beeLogger.Log.Fatalf("beego pro git clone or pull repo error, err: %s", err)
-	//	return
-	//}
+	err = git.CloneORPullRepo(c.Option.Url, c.Option.GitPath)
+	if err != nil {
+		beeLogger.Log.Fatalf("beego pro git clone or pull repo error, err: %s", err)
+		return
+	}
 	c.render()
 }
 

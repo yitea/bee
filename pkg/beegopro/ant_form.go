@@ -21,33 +21,30 @@ func (c *Container) renderAntForm(modelName string, content ModelsContent) (err 
 }
 
 func (c *Container) textRenderAntForm(mname string, content ModelsContent) {
-	columns := make([]AntColumn, 0)
-	for _, column := range content.Schema {
-		title := column.Comment
-		if title == "" {
-			title = column.Name
-		}
-		columns = append(columns, AntColumn{
-			Title: title,
-			Key:   column.Name,
-		})
-	}
+	modelSchemas, _ := initModel(mname, content.Schema)
+	camelPrimaryKey := initPrimaryKey(modelSchemas)
 
 	render := NewRenderAnt("formconfig", mname, c.Option)
-	render.SetContext("columns", columns)
+	render.SetContext("modelSchemas", modelSchemas)
+	render.SetContext("primaryKey", camelPrimaryKey)
+	render.SetContext("lowerFirstPrimaryKey", lowerFirst(camelPrimaryKey))
 	render.SetContext("apiUrl", c.Option.ApiPrefix+"/"+mname)
 	render.SetContext("pageCreate", "/"+mname+"/create")
 	render.SetContext("tableName", utils.SnakeString(render.Name))
 	render.Exec("formconfig.tsx.tmpl")
 
 	render = NewRenderAnt("create", mname, c.Option)
-	render.SetContext("columns", columns)
+	render.SetContext("modelSchemas", modelSchemas)
+	render.SetContext("primaryKey", camelPrimaryKey)
+	render.SetContext("lowerFirstPrimaryKey", lowerFirst(camelPrimaryKey))
 	render.SetContext("apiUrl", c.Option.ApiPrefix+"/"+mname)
 	render.SetContext("tableName", utils.SnakeString(render.Name))
 	render.Exec("create.tsx.tmpl")
 
 	render = NewRenderAnt("update", mname, c.Option)
-	render.SetContext("columns", columns)
+	render.SetContext("modelSchemas", modelSchemas)
+	render.SetContext("primaryKey", camelPrimaryKey)
+	render.SetContext("lowerFirstPrimaryKey", lowerFirst(camelPrimaryKey))
 	render.SetContext("apiUrl", c.Option.ApiPrefix+"/"+mname)
 	render.SetContext("pageCreate", "/"+mname+"/create")
 	render.SetContext("tableName", utils.SnakeString(render.Name))

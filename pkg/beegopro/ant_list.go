@@ -23,19 +23,12 @@ func (c *Container) renderAntList(modelName string, content ModelsContent) (err 
 func (c *Container) textRenderAntList(mname string, content ModelsContent) {
 	render := NewRenderAnt("list", mname, c.Option)
 
-	columns := make([]AntColumn, 0)
-	for _, column := range content.Schema {
-		title := column.Comment
-		if title == "" {
-			title = column.Name
-		}
-		columns = append(columns, AntColumn{
-			Title: title,
-			Key:   column.Name,
-		})
-	}
+	modelSchemas, _ := initModel(render.Name, content.Schema)
+	camelPrimaryKey := initPrimaryKey(modelSchemas)
+	render.SetContext("primaryKey", camelPrimaryKey)
+	render.SetContext("lowerFirstPrimaryKey", lowerFirst(camelPrimaryKey))
 
-	render.SetContext("columns", columns)
+	render.SetContext("modelSchemas", modelSchemas)
 	render.SetContext("apiUrl", c.Option.ApiPrefix+"/"+mname)
 	render.SetContext("pageCreate", "/"+mname+"/create")
 	render.SetContext("pageUpdate", "/"+mname+"/update")

@@ -49,7 +49,10 @@ func (m mysqlDriver) GenerateCreateDown(tableName string) string {
 func (m mysqlDriver) generateSQLFromSchemas(schemas []Schema) string {
 	sql, tags := "", ""
 	for i, v := range schemas {
-		typ, tag := m.getSQLType(v.Type)
+		if v.Orm == "-" {
+			continue
+		}
+		typ, tag := m.getSQLType(v.Type, v.Orm)
 		if typ == "" {
 			beeLogger.Log.Error("Fields format is wrong. Should be: key:type,key:type " + v.Type)
 			return ""
@@ -71,7 +74,7 @@ func (m mysqlDriver) generateSQLFromSchemas(schemas []Schema) string {
 	return sql
 }
 
-func (m mysqlDriver) getSQLType(ktype string) (tp, tag string) {
+func (m mysqlDriver) getSQLType(ktype string, orm string) (tp, tag string) {
 	kv := strings.SplitN(ktype, ":", 2)
 	switch kv[0] {
 	case "string":

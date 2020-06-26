@@ -17,7 +17,6 @@ package beegopro
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	beeLogger "github.com/beego/bee/logger"
 	"github.com/beego/bee/utils"
 	"os"
@@ -48,18 +47,12 @@ func (c *Container) TextRenderModel(mname string, content ModelsContent) {
 	render := NewRenderGo("models", mname, c.Option)
 
 	modelSchemas, hasTime := initModel(render.Name, content.Schema)
-	fmt.Println("modelSchemas------>", modelSchemas)
 	importMaps := make(map[string]struct{}, 0)
 	if hasTime {
 		importMaps["time"] = struct{}{}
 	}
 
-	camelPrimaryKey := ""
-	for _, value := range modelSchemas {
-		if value.ColumnKey == "PRI" {
-			camelPrimaryKey = utils.CamelString(value.Name)
-		}
-	}
+	camelPrimaryKey := initPrimaryKey(modelSchemas)
 
 	render.SetContext("imports", importMaps)
 	render.SetContext("modelSchemas", modelSchemas)
@@ -104,24 +97,28 @@ func (c *Container) databaseRenderModel(mname string, content ModelsContent) {
 func initModel(tableName string, schema []Schema) (output []ModelSchema, hasTime bool) {
 	output = make([]ModelSchema, 0)
 	for i, v := range schema {
+		if v.Comment == "" {
+			v.Comment = v.Name
+		}
+
 		columnKey := ""
 		if i == 0 && v.Type != "autopk" && strings.ToLower(v.Name) != "id" {
-			kt, ormTag, isImportTime := getModelType("auto")
+			kt, ormTag, isImportTime := getModelType("auto", v.Orm)
 			if isImportTime {
 				hasTime = true
 			}
 			output = append(output, ModelSchema{
-				Name:      upperFirst("id"),
-				CamelName: upperFirst("id"),
+				Name:      "id",
+				CamelName: utils.CamelCase("id"),
 				Type:      v.Type,
 				ColumnKey: "PRI",
-				Comment:   v.Comment,
+				Comment:   "编号",
 				GoType:    kt,
-				GoJsonTag: lowerFirst("id"),
+				GoJsonTag: "id",
 				OrmTag:    ormTag,
 			})
 		}
-		kt, ormTag, isImportTime := getModelType(v.Type)
+		kt, ormTag, isImportTime := getModelType(v.Type, v.Orm)
 		if isImportTime {
 			hasTime = true
 		}
@@ -130,37 +127,50 @@ func initModel(tableName string, schema []Schema) (output []ModelSchema, hasTime
 			columnKey = "PRI"
 		}
 		output = append(output, ModelSchema{
-			Name:      upperFirst(v.Name),
-			CamelName: upperFirst(v.Name),
+			Name:      v.Name,
+			CamelName: utils.CamelCase(v.Name),
 			Type:      v.Type,
 			ColumnKey: columnKey,
 			Comment:   v.Comment,
 			GoType:    kt,
-			GoJsonTag: lowerFirst(v.Name),
+			GoJsonTag: lowerFirst(utils.CamelCase(v.Name)),
 			OrmTag:    ormTag,
 		})
 	}
 	return
 }
 
-func getModelType(ktype string) (kt, tag string, hasTime bool) {
-	kv := strings.SplitN(ktype, ":", 2)
-	switch kv[0] {
-	case "string":
-		if len(kv) == 2 {
-			return "string", "size(" + kv[1] + ")\"`", false
+func initPrimaryKey(modelSchemas []ModelSchema) string {
+	camelPrimaryKey := ""
+	for _, value := range modelSchemas {
+		if value.ColumnKey == "PRI" {
+			camelPrimaryKey = utils.CamelString(value.Name)
 		}
-		return "string", "size(128)", false
+	}
+	return camelPrimaryKey
+}
+
+func getModelType(kv string, orm string) (kt, tag string, hasTime bool) {
+	switch kv {
+	case "string":
+		kt = "string"
+		tag = "size(128)"
 	case "text":
-		return "string", "type(longtext)", false
+		kt = "string"
+		tag = "type(longtext)"
 	case "auto":
-		return "int", "auto", false
+		kt = "int"
+		tag = "auto"
 	case "autopk":
-		return "int", "auto", false
+		kt = "int"
+		tag = "auto"
 	case "pk":
-		return "int", "pk", false
+		kt = "int"
+		tag = "pk"
 	case "datetime":
-		return "time.Time", "type(datetime)", true
+		kt = "time.Time"
+		tag = "type(datetime)"
+		hasTime = true
 	case "int", "int8", "int16", "int32", "int64":
 		fallthrough
 	case "uint", "uint8", "uint16", "uint32", "uint64":
@@ -168,11 +178,16 @@ func getModelType(ktype string) (kt, tag string, hasTime bool) {
 	case "bool":
 		fallthrough
 	case "float32", "float64":
-		return kv[0], "", false
+		kt = kv
+		tag = ""
 	case "float":
-		return "float64", "", false
+		kt = "float64"
+		tag = ""
 	}
-	return "", "", false
+	if orm != "" {
+		tag = orm
+	}
+	return
 }
 
 // createPath 调用os.MkdirAll递归创建文件夹
