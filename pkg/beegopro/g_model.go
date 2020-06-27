@@ -24,13 +24,13 @@ import (
 )
 
 func (c *Container) renderModel(modelName string, content ModelsContent) (err error) {
-	switch content.SourceGen {
+	switch c.Option.SourceGen {
 	case "text":
 		c.TextRenderModel(modelName, content)
 	case "database":
 		c.databaseRenderModel(modelName, content)
 	default:
-		err = errors.New("not support source gen, source gen is " + content.SourceGen)
+		err = errors.New("not support source gen, source gen is " + c.Option.SourceGen)
 		return
 	}
 	c.ModelOnce.Do(func() {

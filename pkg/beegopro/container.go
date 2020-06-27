@@ -17,7 +17,7 @@ import (
 var DefaultBeegoPro = &Container{
 	Option: Option{
 		Dsn:           "",
-		Driver:        "",
+		Driver:        "mysql",
 		ProType:       "default",
 		ProVersion:    "v1",
 		EnableModule:  "",
@@ -25,11 +25,12 @@ var DefaultBeegoPro = &Container{
 		BeegoPath:     system.CurrentDir,
 		AntDesignPath: system.CurrentDir,
 		Models:        make(map[string]ModelsContent, 0),
-		Url:           "git@github.com:beego-dev/beego-pro.git",
+		GitRemotePath: "https://github.com/beego-dev/beemod.git",
 		Branch:        "master",
-		GitPath:       system.BeegoHome + "/beego-pro",
-		Overwrite:     false,
+		GitLocalPath:  system.BeegoHome + "/beego-pro",
 		Format:        true,
+		SourceGen:     "text",
+		GitPull:       true,
 	},
 	BeegoJson:      system.CurrentDir + "/beegopro.json",
 	CurPath:        system.CurrentDir,
@@ -82,18 +83,17 @@ type Option struct {
 	EnableModule  string                   `json:"enableModule"`
 	BeegoPath     string                   `json:"beegoPath"`
 	AntDesignPath string                   `json:"antDesignPath"`
-	Models        map[string]ModelsContent `json:"models"`  // name => fields
-	Url           string                   `json:"url"`     // 安装路径
-	Branch        string                   `json:"branch"`  // 安装分支
-	GitPath       string                   `json:"gitPath"` // git clone隐藏地址
-	Overwrite     bool                     `json:"overwrite"`
+	Models        map[string]ModelsContent `json:"models"`        // name => fields
+	GitRemotePath string                   `json:"gitRemotePath"` // 安装路径
+	Branch        string                   `json:"branch"`        // 安装分支
+	GitLocalPath  string                   `json:"gitLocalPath"`  // git clone隐藏地址
 	Format        bool                     `json:"format"`
+	SourceGen     string                   `json:"sourceGen"`
+	GitPull       bool                     `json:"gitPull"`
 }
 
 type ModelsContent struct {
-	Schema    []Schema `json:"schema"`
-	SourceGen string   `json:"sourceGen"`
-	ApiPrefix string   `json:"apiPrefix"`
+	Schema []Schema `json:"schema"`
 }
 
 type Schema struct {
@@ -138,10 +138,12 @@ func (c *Container) Generate(flag bool) {
 
 	c.Option.BeegoPath = absolutePath
 
-	err = git.CloneORPullRepo(c.Option.Url, c.Option.GitPath)
-	if err != nil {
-		beeLogger.Log.Fatalf("beego pro git clone or pull repo error, err: %s", err)
-		return
+	if c.Option.GitPull {
+		err = git.CloneORPullRepo(c.Option.GitRemotePath, c.Option.GitLocalPath)
+		if err != nil {
+			beeLogger.Log.Fatalf("beego pro git clone or pull repo error, err: %s", err)
+			return
+		}
 	}
 	c.render()
 }
@@ -155,13 +157,13 @@ func (c *Container) render() {
 	}
 
 	for _, moduleName := range arr {
-		// 找到渲染函数
+		// render func
 		render, flag := moduleMap[moduleName]
 		if !flag {
 			continue
 		}
 
-		// 找到需要的table name和fields
+		// model table name, model table schema
 		for name, content := range c.Option.Models {
 			err := render(name, content)
 			if err != nil {

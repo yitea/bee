@@ -184,14 +184,14 @@ func NewDBDriver(sqlDriver string) DBDriver {
 // The generated file template consists of an up() method for updating schema and
 // a down() method for reverting the update.
 func (c *Container) renderMigration(modelName string, content ModelsContent) (err error) {
-	switch content.SourceGen {
+	switch c.Option.SourceGen {
 	case "text":
 		c.textRenderMigration(modelName, content)
 		return
 	case "database":
 		return
 	}
-	err = errors.New("not support source gen, source gen is " + content.SourceGen)
+	err = errors.New("not support source gen, source gen is " + c.Option.SourceGen)
 	return
 }
 

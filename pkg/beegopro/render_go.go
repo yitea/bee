@@ -37,7 +37,7 @@ func NewRenderGo(packageName string, name string, option Option) *RenderGo {
 		Option:      option,
 		Name:        title,
 		PackageName: packageName,
-		TmplPath:    option.GitPath + "/" + option.ProType + "/" + option.ProVersion + "/" + language + "/" + packageName,
+		TmplPath:    option.GitLocalPath + "/" + option.ProType + "/" + option.ProVersion + "/" + language + "/" + packageName,
 	}
 	// render path
 	obj.Render = pongo2render.NewRender(obj.TmplPath)

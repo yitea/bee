@@ -8,7 +8,7 @@ import (
 )
 
 func (c *Container) renderAntForm(modelName string, content ModelsContent) (err error) {
-	switch content.SourceGen {
+	switch c.Option.SourceGen {
 	case "text":
 		c.textRenderAntForm(modelName, content)
 		return
@@ -16,7 +16,7 @@ func (c *Container) renderAntForm(modelName string, content ModelsContent) (err 
 		c.databaseRenderAntForm(modelName, content)
 		return
 	}
-	err = errors.New("not support source gen, source gen is " + content.SourceGen)
+	err = errors.New("not support source gen, source gen is " + c.Option.SourceGen)
 	return
 }
 

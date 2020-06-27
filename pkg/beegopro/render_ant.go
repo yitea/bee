@@ -38,7 +38,7 @@ func NewRenderAnt(typeName string, name string, option Option) *RenderAnt {
 		TypeName: typeName,
 	}
 	// render path
-	obj.Render = pongo2render.NewRender(option.GitPath + "/" + option.ProType + "/" + option.ProVersion + "/" + language + "/")
+	obj.Render = pongo2render.NewRender(option.GitLocalPath + "/" + option.ProType + "/" + option.ProVersion + "/" + language + "/")
 
 	if p != "" {
 		i := strings.LastIndex(p[:len(p)-1], "/")

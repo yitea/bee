@@ -7,7 +7,7 @@ import (
 )
 
 func (c *Container) renderRouter(modelName string, content ModelsContent) (err error) {
-	switch content.SourceGen {
+	switch c.Option.SourceGen {
 	case "text":
 		c.textRenderRouters(modelName, content)
 		return
@@ -15,7 +15,7 @@ func (c *Container) renderRouter(modelName string, content ModelsContent) (err e
 		c.databaseRenderRouters(modelName, content)
 		return
 	}
-	err = errors.New("not support source gen, source gen is " + content.SourceGen)
+	err = errors.New("not support source gen, source gen is " + c.Option.SourceGen)
 	return
 }
 
