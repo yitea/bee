@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 	"unicode/utf8"
 )
 
@@ -31,6 +32,7 @@ var DefaultBeegoPro = &Container{
 		Format:        true,
 		SourceGen:     "text",
 		GitPull:       true,
+		GenerateTime:  time.Now().Format(MDateFormat),
 	},
 	BeegoJson:      system.CurrentDir + "/beegopro.json",
 	CurPath:        system.CurrentDir,
@@ -90,6 +92,7 @@ type Option struct {
 	Format        bool                     `json:"format"`
 	SourceGen     string                   `json:"sourceGen"`
 	GitPull       bool                     `json:"gitPull"`
+	GenerateTime  string                   `json:"-"`
 }
 
 type ModelsContent struct {
@@ -97,10 +100,15 @@ type ModelsContent struct {
 }
 
 type Schema struct {
-	Name    string `json:"name"`    // mysql name
-	Type    string `json:"type"`    // mysql type
-	Comment string `json:"comment"` // mysql comment
-	Orm     string `json:"orm"`
+	Name    string    `json:"name"`    // mysql name
+	Type    string    `json:"type"`    // mysql type
+	Comment string    `json:"comment"` // mysql comment
+	Orm     string    `json:"orm"`
+	Ant     AntSchema `json:"ant"`
+}
+
+type AntSchema struct {
+	List string `json:"list"`
 }
 
 type ProSingleRender func(name string, content ModelsContent) error // 渲染单个表

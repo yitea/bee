@@ -108,14 +108,16 @@ func initModel(tableName string, schema []Schema) (output []ModelSchema, hasTime
 				hasTime = true
 			}
 			output = append(output, ModelSchema{
-				Name:      "id",
-				CamelName: utils.CamelCase("id"),
-				Type:      v.Type,
-				ColumnKey: "PRI",
-				Comment:   "编号",
-				GoType:    kt,
-				GoJsonTag: "id",
-				OrmTag:    ormTag,
+				Name:       "id",
+				CamelName:  utils.CamelCase("id"),
+				Type:       v.Type,
+				ColumnKey:  "PRI",
+				Comment:    "编号",
+				GoType:     kt,
+				GoJsonTag:  "id",
+				OrmTag:     ormTag,
+				IsListShow: true,
+				IsOrm:      true,
 			})
 		}
 		kt, ormTag, isImportTime := getModelType(v.Type, v.Orm)
@@ -126,16 +128,29 @@ func initModel(tableName string, schema []Schema) (output []ModelSchema, hasTime
 		if v.Type == "autopk" {
 			columnKey = "PRI"
 		}
-		output = append(output, ModelSchema{
-			Name:      v.Name,
-			CamelName: utils.CamelCase(v.Name),
-			Type:      v.Type,
-			ColumnKey: columnKey,
-			Comment:   v.Comment,
-			GoType:    kt,
-			GoJsonTag: lowerFirst(utils.CamelCase(v.Name)),
-			OrmTag:    ormTag,
-		})
+
+		modelSchema := ModelSchema{
+			Name:       v.Name,
+			CamelName:  utils.CamelCase(v.Name),
+			Type:       v.Type,
+			ColumnKey:  columnKey,
+			Comment:    v.Comment,
+			GoType:     kt,
+			GoJsonTag:  lowerFirst(utils.CamelCase(v.Name)),
+			OrmTag:     ormTag,
+			IsListShow: true,
+			IsOrm:      true,
+		}
+
+		if v.Ant.List == "ignore" {
+			modelSchema.IsListShow = false
+		}
+
+		if v.Orm == "-" {
+			modelSchema.IsOrm = false
+		}
+
+		output = append(output, modelSchema)
 	}
 	return
 }

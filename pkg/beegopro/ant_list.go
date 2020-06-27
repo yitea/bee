@@ -32,6 +32,7 @@ func (c *Container) textRenderAntList(mname string, content ModelsContent) {
 	render.SetContext("apiUrl", c.Option.ApiPrefix+"/"+mname)
 	render.SetContext("pageCreate", "/"+mname+"/create")
 	render.SetContext("pageUpdate", "/"+mname+"/update")
+	render.SetContext("pageInfo", "/"+mname+"/info")
 	render.SetContext("tableName", utils.SnakeString(render.Name))
 
 	render.Exec("list.tsx.tmpl")

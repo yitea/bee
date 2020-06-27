@@ -50,6 +50,15 @@ func (c *Container) textRenderAntForm(mname string, content ModelsContent) {
 	render.SetContext("tableName", utils.SnakeString(render.Name))
 	render.Exec("update.tsx.tmpl")
 
+	render = NewRenderAnt("info", mname, c.Option)
+	render.SetContext("modelSchemas", modelSchemas)
+	render.SetContext("primaryKey", camelPrimaryKey)
+	render.SetContext("lowerFirstPrimaryKey", lowerFirst(camelPrimaryKey))
+	render.SetContext("apiUrl", c.Option.ApiPrefix+"/"+mname)
+	render.SetContext("pageCreate", "/"+mname+"/create")
+	render.SetContext("tableName", utils.SnakeString(render.Name))
+	render.Exec("info.tsx.tmpl")
+
 }
 
 func (c *Container) databaseRenderAntForm(mname string, content ModelsContent) {

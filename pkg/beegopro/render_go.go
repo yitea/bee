@@ -63,6 +63,7 @@ func NewRenderGo(packageName string, name string, option Option) *RenderGo {
 	obj.Context["name"] = obj.Name
 	obj.Context["pkgPath"] = obj.PkgPath
 	obj.Context["apiPrefix"] = obj.Option.ApiPrefix
+	obj.Context["generateTime"] = option.GenerateTime
 	return obj
 }
 
